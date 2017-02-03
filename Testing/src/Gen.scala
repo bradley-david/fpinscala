@@ -1,8 +1,8 @@
 
-import fpinscala.laziness.Stream
-import fpinscala.state._
-import fpinscala.parallelism._
-import fpinscala.parallelism.Par.Par
+import fpinscala.laziness.src.Stream._
+import fpinscala.state.src._
+import fpinscala.parallelism.src._
+import fpinscala.parallelism.src.Par._
 import Gen._
 import Prop._
 import java.util.concurrent.{Executors,ExecutorService}
@@ -32,5 +32,4 @@ trait Gen[A] {
 trait SGen[+A] {
 
 
-  
 }
