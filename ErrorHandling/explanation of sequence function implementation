@@ -1,0 +1,46 @@
+
+3
+down vote
+accepted
+It seems that sequence is intended to return None if any element in the list is None, and return Some of values in the list otherwise. So your intuition about the Nil case is not correct -- Nil is an empty list that contains no Nones, so the result should not be None.
+
+Let's take it one step at a time, from the inside out.
+
+Suppose we have some variable optionListof type Option[List[A]] and some variable a of type A. What do we get when we call:
+
+optionList.map(a :: _)
+If optionList is None, then this will be None. If optionList contains a list, say list, this will be Some(a :: list).
+
+Now if for some variable option of type Option[A], what do we get when we call:
+
+option.flatMap(a => optionList.map(a :: _))
+If option is None, then this will be None. If option contains a value, say a, then this will be optionList.map(a :: _), which we figured out above (by the definition of flatMap).
+
+Now if we tie it together, we see that if any element is None, then the recursive call is avoided and the whole result will be None. If no element is None, then the recursive call will keep appending the element's values, and the result will be Some of the list's element's internal values.
+
+It might be more clearer if you rewrite the inner part:
+
+def sequence[A](l: List[Option[A]]): Option[List[A]] = l match {
+    case Nil => Some(Nil)
+    case h :: t => h match {
+        case None => None
+        case Some(head) => sequence(t) match {
+            case None => None
+            case Some(list) => Some(head :: list)
+        }
+    }
+}
+Or even less idiomatic, but maybe clarifying:
+
+def sequence[A](l: List[Option[A]]): Option[List[A]] = l match {
+    case Nil => Some(Nil)
+    case h :: t =>
+        val restOfList = sequence(t)
+        if (h == None || restOfList == None) None else Some(h.get :: restOfList.get)
+}
+You could also rewrite this pretty naturally as a fold without recursion, in case that is what's confusion you:
+
+def sequence[A](l: List[Option[A]]) = (Option(List.empty[A]) /: l) {
+    case(Some(sofar), Some(value)) => Some(value :: sofar);
+    case(_, _) => None
+}
